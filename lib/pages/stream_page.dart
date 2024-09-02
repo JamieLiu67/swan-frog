@@ -18,7 +18,7 @@ class SendMetadata extends StatefulWidget {
 class _State extends State<SendMetadata> {
   late final RtcEngine _engine;
   bool isJoined = false;
-  Set<int> remoteUids = {};
+  int remoteUid = 996; //写死 996 为远端
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -52,9 +52,6 @@ class _State extends State<SendMetadata> {
       onUserJoined: (RtcConnection connection, int rUid, int elapsed) {
         logSink.log(
             '[onUserJoined] connection: ${connection.toJson()} remoteUid: $rUid elapsed: $elapsed');
-        setState(() {
-          remoteUids.add(rUid);
-        });
       },
       onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
         logSink.log(
@@ -63,11 +60,17 @@ class _State extends State<SendMetadata> {
           isJoined = true;
         });
       },
+      onRemoteAudioStateChanged: (RtcConnection connection, int remoteUid,
+          RemoteAudioState state, RemoteAudioStateReason reason, int elapsed) {
+        logSink.log(
+            '[onRemoteAudioStateChanged] connection: ${connection.toJson()} remoteUid: $remoteUid RemoteAudioState: $state RemoteAudioStateReason: $reason elapsed: $elapsed');
+      },
       onLeaveChannel: (RtcConnection connection, RtcStats stats) {
         logSink.log(
             '[onLeaveChannel] connection: ${connection.toJson()} stats: ${stats.toJson()}');
         setState(() {
           isJoined = false;
+          remoteUid = 0;
         });
       },
       onStreamMessageError: (RtcConnection connection, int remoteUid,
@@ -79,7 +82,7 @@ class _State extends State<SendMetadata> {
     await _engine.joinChannel(
         token: config.token,
         channelId: config.channelId,
-        uid: 997,
+        uid: 0,
         options: const ChannelMediaOptions(
           clientRoleType: ClientRoleType.clientRoleBroadcaster,
           publishCameraTrack: false,
@@ -87,24 +90,6 @@ class _State extends State<SendMetadata> {
           autoSubscribeAudio: true,
           autoSubscribeVideo: true,
         ));
-  }
-
-  void _joinChannel() async {
-    await _engine.joinChannel(
-        token: config.token,
-        channelId: config.channelId,
-        uid: config.uid,
-        options: const ChannelMediaOptions(
-          clientRoleType: ClientRoleType.clientRoleBroadcaster,
-          publishCameraTrack: true,
-          publishMicrophoneTrack: false,
-          autoSubscribeAudio: true,
-          autoSubscribeVideo: true,
-        ));
-  }
-
-  Future<void> _leaveChannel() async {
-    await _engine.leaveChannel();
   }
 
   Future<void> _onPressSend() async {
@@ -127,55 +112,69 @@ class _State extends State<SendMetadata> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: remoteUids.isEmpty
-          ? const Center(child: Text('No remote user right now'))
-          : Stack(
-              children: [
-                AgoraVideoView(
-                  controller: VideoViewController(
-                    rtcEngine: _engine,
-                    canvas: const VideoCanvas(uid: 996),
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: ElevatedButton(
-                            onPressed: isJoined ? _leaveChannel : _joinChannel,
-                            child:
-                                Text('${isJoined ? 'Leave' : 'Join'} channel'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (isJoined)
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _controller,
-                              decoration: const InputDecoration(
-                                hintText: 'Input Message',
-                              ),
+      body: Stack(
+        children: [
+          AgoraVideoView(
+            controller: VideoViewController(
+              rtcEngine: _engine,
+              canvas: VideoCanvas(
+                  uid: remoteUid, renderMode: RenderModeType.renderModeHidden),
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              if (isJoined)
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: TextField(
+                          controller: TextEditingController(),
+                          decoration: const InputDecoration(
+                            filled: true,
+                            hintText: '说点什么',
+                            fillColor: Colors.white,
+                            // 设置未聚焦状态的边框颜色
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50.0)),
+                              borderSide:
+                                  BorderSide(color: Colors.grey), // 边框颜色为灰色
+                            ),
+                            // 设置聚焦状态的边框颜色
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50.0)),
+                              borderSide:
+                                  BorderSide(color: Colors.amber), // 边框颜色为灰色
                             ),
                           ),
-                          ElevatedButton(
-                            onPressed: _onPressSend,
-                            child: const Text('Send'),
-                          ),
-                        ],
+                        ),
                       ),
-                  ],
+                      Expanded(
+                        flex: 1,
+                        child: IconButton(
+                          onPressed: _onPressSend,
+                          icon: const Icon(
+                            Icons.send,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      ),
+                      Expanded(flex: 5, child: Container()),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
