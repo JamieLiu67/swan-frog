@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -20,6 +21,7 @@ class _State extends State<SendMetadata> {
   bool isJoined = false;
   int remoteUid = 996; //写死 996 为远端
   final TextEditingController _controller = TextEditingController();
+  int streamId = 0;
 
   @override
   void initState() {
@@ -56,6 +58,7 @@ class _State extends State<SendMetadata> {
       onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
         logSink.log(
             '[onJoinChannelSuccess] connection: ${connection.toJson()} elapsed: $elapsed');
+
         setState(() {
           isJoined = true;
         });
@@ -90,6 +93,8 @@ class _State extends State<SendMetadata> {
           autoSubscribeAudio: true,
           autoSubscribeVideo: true,
         ));
+    streamId = await _engine.createDataStream(
+        const DataStreamConfig(syncWithAudio: false, ordered: true));
   }
 
   Future<void> _onPressSend() async {
@@ -98,8 +103,6 @@ class _State extends State<SendMetadata> {
     }
 
     try {
-      final streamId = await _engine.createDataStream(
-          const DataStreamConfig(syncWithAudio: false, ordered: false));
       final data = Uint8List.fromList(utf8.encode(_controller.text));
       await _engine.sendStreamMessage(
           streamId: streamId, data: data, length: data.length);
