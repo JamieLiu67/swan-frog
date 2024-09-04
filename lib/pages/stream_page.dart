@@ -99,7 +99,7 @@ class _State extends State<SendMetadata> {
 
     try {
       final streamId = await _engine.createDataStream(
-          const DataStreamConfig(syncWithAudio: false, ordered: true));
+          const DataStreamConfig(syncWithAudio: false, ordered: false));
       final data = Uint8List.fromList(utf8.encode(_controller.text));
       await _engine.sendStreamMessage(
           streamId: streamId, data: data, length: data.length);
@@ -118,7 +118,7 @@ class _State extends State<SendMetadata> {
             controller: VideoViewController(
               rtcEngine: _engine,
               canvas: VideoCanvas(
-                  uid: remoteUid, renderMode: RenderModeType.renderModeHidden),
+                  uid: remoteUid, renderMode: RenderModeType.renderModeFit),
             ),
           ),
           Column(
@@ -135,7 +135,7 @@ class _State extends State<SendMetadata> {
                       Expanded(
                         flex: 4,
                         child: TextField(
-                          controller: TextEditingController(),
+                          controller: _controller,
                           decoration: const InputDecoration(
                             filled: true,
                             hintText: '说点什么',
