@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -58,7 +57,6 @@ class _State extends State<SendMetadata> {
       onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
         logSink.log(
             '[onJoinChannelSuccess] connection: ${connection.toJson()} elapsed: $elapsed');
-
         setState(() {
           isJoined = true;
         });
