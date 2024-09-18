@@ -1,5 +1,5 @@
 /// Key of APP ID
-const keyAppId = 'aab8b8f5a8cd4469a63042fcfafe7063';
+const keyAppId = '72d8d5c7b38445e5bb26f1f270ee4649';
 
 /// Key of Channel ID
 const keyChannelId = 'swan_frog';

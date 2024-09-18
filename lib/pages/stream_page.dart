@@ -99,9 +99,11 @@ class _State extends State<SendMetadata> {
     if (_controller.text.isEmpty) {
       return;
     }
+    var messageMap = {"type": "audience", "message": _controller.text};
+    String messageData = jsonEncode(messageMap);
 
     try {
-      final data = Uint8List.fromList(utf8.encode(_controller.text));
+      final data = Uint8List.fromList(utf8.encode(messageData));
       await _engine.sendStreamMessage(
           streamId: streamId, data: data, length: data.length);
       _controller.clear();
