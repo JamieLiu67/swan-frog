@@ -83,8 +83,7 @@ class _State extends State<SendMetadata> {
       },
     ));
     await _engine
-        .setSubscribeAudioAllowlist(uidList: [996, 2024], uidNumber: 2);
-    await _engine.setSubscribeVideoAllowlist(uidList: [996], uidNumber: 1);
+        .setSubscribeAudioAllowlist(uidList: [996, 999, 2024], uidNumber: 3);
     await _engine.joinChannel(
         token: config.token,
         channelId: config.channelId,
@@ -94,7 +93,7 @@ class _State extends State<SendMetadata> {
           publishCameraTrack: false,
           publishMicrophoneTrack: false,
           autoSubscribeAudio: false,
-          autoSubscribeVideo: false,
+          autoSubscribeVideo: true,
         ));
 
     streamId = await _engine.createDataStream(
@@ -165,8 +164,8 @@ class _State extends State<SendMetadata> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.amber), // 边框颜色为灰色
+                              borderSide: BorderSide(
+                                  color: Colors.deepPurple), // 边框颜色为灰色
                             ),
                           ),
                         ),
