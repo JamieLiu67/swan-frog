@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -21,6 +22,7 @@ class _State extends State<SendMetadata> {
   int remoteUid = 996; //写死 996 为远端
   final TextEditingController _controller = TextEditingController();
   int streamId = 0;
+  int localUid = 0;
 
   @override
   void initState() {
@@ -59,6 +61,7 @@ class _State extends State<SendMetadata> {
             '[onJoinChannelSuccess] connection: ${connection.toJson()} elapsed: $elapsed');
         setState(() {
           isJoined = true;
+          localUid = connection.localUid!;
         });
       },
       onRemoteAudioStateChanged: (RtcConnection connection, int remoteUid,
@@ -80,6 +83,9 @@ class _State extends State<SendMetadata> {
             '[onStreamMessageError] connection: ${connection.toJson()} remoteUid: $remoteUid, streamId: $streamId, code: $code, missed: $missed, cached: $cached');
       },
     ));
+    await _engine
+        .setSubscribeAudioAllowlist(uidList: [996, 2024], uidNumber: 2);
+    await _engine.setSubscribeVideoAllowlist(uidList: [996], uidNumber: 1);
     await _engine.joinChannel(
         token: config.token,
         channelId: config.channelId,
@@ -88,9 +94,10 @@ class _State extends State<SendMetadata> {
           clientRoleType: ClientRoleType.clientRoleBroadcaster,
           publishCameraTrack: false,
           publishMicrophoneTrack: false,
-          autoSubscribeAudio: true,
-          autoSubscribeVideo: true,
+          autoSubscribeAudio: false,
+          autoSubscribeVideo: false,
         ));
+
     streamId = await _engine.createDataStream(
         const DataStreamConfig(syncWithAudio: false, ordered: true));
   }
@@ -99,7 +106,11 @@ class _State extends State<SendMetadata> {
     if (_controller.text.isEmpty) {
       return;
     }
-    var messageMap = {"type": "audience", "message": _controller.text};
+    var messageMap = {
+      "name": "$localUid",
+      "type": "audience",
+      "message": _controller.text
+    };
     String messageData = jsonEncode(messageMap);
 
     try {
@@ -138,11 +149,12 @@ class _State extends State<SendMetadata> {
                       Expanded(
                         flex: 4,
                         child: TextField(
+                          style: const TextStyle(color: Colors.white),
                           controller: _controller,
                           decoration: const InputDecoration(
-                            filled: true,
                             hintText: '说点什么',
-                            fillColor: Colors.white,
+                            hintStyle: TextStyle(color: Colors.white),
+
                             // 设置未聚焦状态的边框颜色
                             enabledBorder: OutlineInputBorder(
                               borderRadius:
@@ -166,7 +178,7 @@ class _State extends State<SendMetadata> {
                           onPressed: _onPressSend,
                           icon: const Icon(
                             Icons.send,
-                            color: Colors.amber,
+                            color: Colors.purple,
                           ),
                         ),
                       ),
