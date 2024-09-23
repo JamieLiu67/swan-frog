@@ -130,7 +130,7 @@ class _State extends State<SendMetadata> {
             controller: VideoViewController(
               rtcEngine: _engine,
               canvas: VideoCanvas(
-                  uid: remoteUid, renderMode: RenderModeType.renderModeFit),
+                  uid: remoteUid, renderMode: RenderModeType.renderModeHidden),
             ),
           ),
           Column(
@@ -147,36 +147,43 @@ class _State extends State<SendMetadata> {
                       Expanded(
                         flex: 4,
                         child: TextField(
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.grey),
                           controller: _controller,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 5.0, horizontal: 10.0), // 调整内边距
                             hintText: '说点什么',
-                            hintStyle: TextStyle(color: Colors.white),
+                            hintStyle: TextStyle(color: Colors.grey),
 
                             // 设置未聚焦状态的边框颜色
                             enabledBorder: OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey), // 边框颜色为灰色
+                              borderSide: BorderSide(color: Colors.white),
                             ),
                             // 设置聚焦状态的边框颜色
                             focusedBorder: OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0)),
-                              borderSide: BorderSide(
-                                  color: Colors.deepPurple), // 边框颜色为灰色
+                              borderSide: BorderSide(color: Colors.white),
                             ),
                           ),
                         ),
                       ),
                       Expanded(
                         flex: 1,
-                        child: IconButton(
-                          onPressed: _onPressSend,
-                          icon: const Icon(
-                            Icons.send,
-                            color: Colors.purple,
+                        child: Container(
+                          padding: const EdgeInsets.all(1.0), // 设置内边距
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF635FF6), // 背景颜色
+                            shape: BoxShape.circle, // 圆形
+                          ),
+                          child: IconButton(
+                            onPressed: _onPressSend,
+                            icon: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
